@@ -1,0 +1,135 @@
+\documentclass{book}
+\usepackage[a4paper,top=2.5cm,bottom=2.5cm,left=2.5cm,right=2.5cm]{geometry}
+\usepackage{makeidx}
+\usepackage{natbib}
+\usepackage{graphicx}
+\usepackage{multicol}
+\usepackage{float}
+\usepackage{listings}
+\usepackage{color}
+\usepackage{ifthen}
+\usepackage[table]{xcolor}
+\usepackage{textcomp}
+\usepackage{alltt}
+\usepackage{ifpdf}
+\ifpdf
+\usepackage[pdftex,
+            pagebackref=true,
+            colorlinks=true,
+            linkcolor=blue,
+            unicode
+           ]{hyperref}
+\else
+\usepackage[ps2pdf,
+            pagebackref=true,
+            colorlinks=true,
+            linkcolor=blue,
+            unicode
+           ]{hyperref}
+\usepackage{pspicture}
+\fi
+\usepackage[utf8]{inputenc}
+\usepackage[ngerman]{babel}
+
+\usepackage{mathptmx}
+\usepackage[scaled=.90]{helvet}
+
+\usepackage{mathptmx}
+\usepackage[scaled=.90]{helvet}
+\usepackage{courier}
+\usepackage{sectsty}
+\usepackage[titles]{tocloft}
+\usepackage{doxygen}
+
+\lstset{language=C++,inputencoding=utf8,basicstyle=\footnotesize,breaklines=true,breakatwhitespace=true,tabsize=8,numbers=left }
+\makeindex
+\setcounter{tocdepth}{3}
+%\renewcommand{\footrulewidth}{0.4pt}
+\renewcommand{\familydefault}{\sfdefault}
+\hfuzz=15pt
+\setlength{\emergencystretch}{15pt}
+\hbadness=750
+\tolerance=750
+
+%\usepackage{verbatimfiles}
+
+\usepackage[outline,light]{draftcopy}
+
+% So wird's gemacht, wenn in den Text EPS-Bilder eingefuegt werden sollen!
+% \begin{figure}[htb]
+% \centerline{\includegraphics[width=\textwidth]{bild1.eps}}
+% \caption{\label{bild1}Title of the picture.}
+% \end{figure}
+
+
+\begin{document}
+
+%Deckblatt erzeugen
+\thispagestyle{headings}
+\begin{titlepage}
+	\let\footnotesize\small
+	\let\footnoterule\relax
+	\null
+	\vfil
+	\vskip 60pt
+	\begin{center}
+		{\LARGE
+			{\Large Rudolf-Diesel-Fachschule}\\ [1cm]
+			Fachbereich \\ \bf Informatiktechnik
+			\\[2cm]
+			{\huge Projektarbeit}\\ [2cm]
+			{\Huge SunnyConnectorPI / SunnyConnectorAnalyzer}
+			\par}%
+		\vskip 4em
+		{\large \lineskip .75em
+		\begin{tabular}[t]{c}
+			{\Large von}\\[.5em]
+			{\Large Thomas Barth}\\[7em]
+			{\bf Betreuung:}\\[.5em]
+			Dr.\ Markus\ Hoffmann\\
+		\end{tabular}
+		\par}%
+		\vfill
+		{\large
+			Nürnberg, den 10.April 2012
+			\par}%
+
+		{\large \lineskip .75em
+		\begin{tabular}[t]{c}
+			{\Large }\\[.5em]
+			{\large Weiterentwicklung\ vom\ \today}
+		\end{tabular}
+		\par}%
+		
+		% Erklaerung
+		\vspace*{2cm}
+		\centerline{\bf Erklärung}
+
+		\vspace*{1cm}
+		Ich versichere, die vorliegende Arbeit selbstständig und nur unter Benutzung
+		der angegebenen Hilfsmittel angefertigt zu haben.
+
+	\end{center}
+
+\end{titlepage}
+
+\clearpage\thispagestyle{empty}
+
+\begin{titlepage}
+	\begin{center}
+		{\huge \bf $projectname} \\ [1cm]
+		{\huge \bf $projectnumber} \\ [3cm]
+		{\huge Erzeugt von Doxygen $doxygenversion} \\ [1cm]
+		{\Large $datetime}
+	\end{center}
+\end{titlepage}
+
+\clearpage\thispagestyle{empty}
+
+\pagestyle{headings}
+
+\pagenumbering{roman}
+\tableofcontents
+\clearpage\thispagestyle{empty}
+\pagenumbering{arabic}
+\hypersetup{pageanchor=true,citecolor=blue}

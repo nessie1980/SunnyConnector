@@ -1,0 +1,193 @@
+#! /bin/bash
+##################################################################################################
+#
+# Startup-Script für den Daemon "SunnyConnector32"
+#
+# Das Script benutzt Kommandozeilenparameter um Umgebungsvariablen
+# für den Daemon "SunnyConnector32" zu setzen.
+# Sollte ein Parameter nicht an den SunnyConnector32-Daemon übergeben werden,
+# wird ein Defaultwert benutzt.
+# Für weitere Informationen siehe Dokumentation des SunnyConnector32.
+#
+# Benutzung: ./sunnyconnectord32 {start|stop|status|restart}
+# Beispiel: ./sunnyconnectord32 start
+#
+###################################################################################################
+
+###################################################################################################
+# Pfadvariable                                                                                    #
+###################################################################################################
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+
+###################################################################################################
+# Kommandozeilenvariablen für den SunnyConnector32                                                #
+###################################################################################################
+SUNNYPATH="/home/thomas/SunnyConnector32/"           # Hauptpfad zum SunnyConnector32
+CONFIG=$SUNNYPATH"config.ini"                        # Pfad zur CONFIG.INI
+YASDI=$SUNNYPATH"yasdi.ini"                          # Pfad zur YASDI.INI
+WORKDIR="/srv/SunnyConnector32"                      # Arbeitsverzeichnis für den Daemon
+NAME="SunnyConnector32"                              # Name welcher im der "daemon.log" angezeigt wird
+UMASKMKDIR=0770                                      # UMASK für das Anlegen des Arbeitsverzeichnisses
+PIDFILE="/var/run/SunnyConnector32.pid"              # Datei für die PID
+UMASK=027                                            # UMASK für Dateien des Daemon
+
+###################################################################################################
+# Variablen des Daemon                                                                            #
+###################################################################################################
+DAEMON="$SUNNYPATH$NAME"                             # Pfad zum SunnyConnector32
+USER=root                                            # User unter welchem der Daemon laufen soll
+
+###################################################################################################
+#                                                                                                 #
+# Von hieran sollten Sie nichts mehr ändern, ausser Sie wissen was Sie tun ;-)                    #
+#                                                                                                 #
+###################################################################################################
+
+###################################################################################################
+# Optionen für den Daemon                                                                         #
+###################################################################################################
+DAEMON_OPTS="-c $CONFIG -d $WORKDIR -n $NAME -m $UMASKMKDIR -p $PIDFILE -u $UMASK -y $YASDI"
+
+###################################################################################################
+# Logger konfigurieren                                                                            #
+###################################################################################################
+LOGGER="logger -i -t SunnyConnector32 -p daemon.INFO"
+
+###################################################################################################
+# Einstellen der Farben für den Logger                                                            #
+###################################################################################################
+SUCCESS_COLOR="\\033[1;32m"
+ERROR_COLOR="\\033[1;31m"
+WARNING_COLOR="\\033[1;33m"
+NORMAL_COLOR="\\033[0;39m"
+
+###################################################################################################
+# Ermitteln der Spaltenbreite des Terminals                                                       #
+###################################################################################################
+RES_COL=`stty size | cut -d" "  -f2`
+RES_COL=`expr $RES_COL - 12`
+COL="\\033[${RES_COL}G"
+
+###################################################################################################
+# Erstellen der Statusmeldungen                                                                   #
+###################################################################################################
+SUCCESS="${COL} [${SUCCESS_COLOR} OK ${NORMAL_COLOR}]\r"
+ERROR="${COL} [${ERROR_COLOR} ERROR ${NORMAL_COLOR}]\r"
+WARNING="${COL} [${WARNING_COLOR} WARNING ${NORMAL_COLOR}]\r"
+SUCCESS_SYS="[ OK ]"
+ERROR_SYS="[ ERROR ]"
+WARNING_SYS="[ WARNING ]"
+
+###################################################################################################
+# Erstellen der Statusmeldungen                                                                   #
+###################################################################################################
+BUILD=1
+MINOR=1
+MAJOR=1
+
+###################################################################################################
+# Prüfen welcher Parameter per Kommandozeile übergeben wurde                                      #
+###################################################################################################
+case "$1" in
+  start)
+                echo ""
+                echo "Daemon wird gestartet..."
+                echo "Daemon wird gestartet..." | $LOGGER
+                start-stop-daemon --start --quiet --exec $DAEMON --pidfile $PIDFILE --chuid=$USER -- ${DAEMON_OPTS}
+                RETURN=$?
+                if [ $RETURN == 0 ]; then
+                   echo -e "Daemon wurde gestartet...$SUCCESS\n"
+                   printf 'Daemon wurde gestartet...%75s' "$SUCCESS_SYS" | $LOGGER
+                elif [ $RETURN == 1 ]; then
+                   echo -e "Daemon wurde nicht gestartet...$WARNING"
+                   printf 'Daemon wurde nicht gestartet...%69s' "$WARNING_SYS" | $LOGGER
+                   echo -e "Daemon laeuft bereits...$WARNING\n"
+                   printf 'Daemon laeuft bereits...%76s' "$WARNING_SYS" | $LOGGER
+                elif [ $RETURN == 2 ]; then
+                   echo -e "Daemon wurde nicht gestartet...$ERROR"
+                   printf 'Daemon wurde nicht gestartet...%69s' "$ERROR_SYS" | $LOGGER
+                   echo -e "Commandline-Fehler...$ERROR\n"
+                   printf 'Commandline-Fehler...%79s' "$ERROR_SYS" | $LOGGER
+                elif [ $RETURN == 3 ]; then
+                   echo -e "Daemon wurde nicht gestartet...$WARNING"
+                   echo -e "Fuer weiter Informationen siehe \"/var/log/daemon.log\"...$WARNING\n"
+                   printf 'Daemon wurde nicht gestartet...%69s' "$WARNING_SYS" | $LOGGER
+                else
+                   echo -e "Daemon wurde nicht gestartet...$WARNING"
+                   echo -e "Fuer weiter Informationen siehe \"/var/log/daemon.log\"...$WARNING\n"
+                   printf 'Daemon wurde nicht gestartet...%69s' "$WARNING_SYS" | $LOGGER
+                fi
+
+                if [ $RETURN -lt 1 ]; then
+                   echo "Status des Daemon ermitteln..."
+                   sleep 1
+                   start-stop-daemon --start --test --quiet --exec $DAEMON --pidfile $PIDFILE --chuid=$USER -- ${DAEMON_OPTS}
+                   RETURN=$?
+                   if [ $RETURN == 1 ]; then
+                      echo -e "Daemon laeuft...$SUCCESS\n"
+                   else
+                      echo -e "Daemon laueft nicht...$WARNING"
+                      echo -e "Fuer weiter Informationen siehe \"/var/log/daemon.log\"...$WARNING\n"
+                   fi
+                fi
+                ;;
+  stop)
+                echo ""
+                echo "Daemon stoppen..."
+                echo "Daemon stoppen..." | $LOGGER
+                start-stop-daemon --start --test --quiet --exec $DAEMON --pidfile $PIDFILE --chuid=$USER -- ${DAEMON_OPTS}
+                RETURN=$?
+                if [ $RETURN == 1 ]; then
+                   echo -e "Daemon laueft...$SUCCESS"
+                   printf 'Daemon laeuft...%84s' "$SUCCESS_SYS" | $LOGGER
+                   start-stop-daemon -K -q -p $PIDFILE
+                   RETURN=$?
+                   if [ $RETURN == 0 ]; then
+                      echo -e "Daemon wurde gestoppt...$SUCCESS\n"
+                      printf 'Daemon wurde gestoppt...%76s' "$SUCCESS_SYS" | $LOGGER
+                   else
+                      echo -e "Daemon wurde nicht gestoppt...$WARNING"
+                      printf 'Daemon wurde nicht gestoppt...%70s' "$WARNING_SYS" | $LOGGER
+                      echo -e "Daemon laeuft nicht...$WARNING\n"
+	                  printf 'Daemon laueft nicht...%78s' "$WARNING_SYS" | $LOGGER
+                   fi
+                 else
+                   echo -e "Daemon laueft nicht...$WARNING\n"
+                   printf 'Daemon laueft nicht...%78s' "$WARNING_SYS" | $LOGGER
+                fi
+                ;;
+  status)
+                echo ""
+                echo "Status des Daemon ermitteln..."
+                echo "Status des Daemon ermitteln..." | $LOGGER
+                start-stop-daemon --start --test --quiet --exec $DAEMON --pidfile $PIDFILE --chuid=$USER -- ${DAEMON_OPTS}
+                RETURN=$?
+                if [ $RETURN == 1 ]; then
+                   echo -e "Daemon laueft...$SUCCESS\n"
+                   printf 'Daemon laueft...%84s' "$SUCCESS_SYS" | $LOGGER
+                else
+                   echo -e "Daemon laeuft nicht...$WARNING\n"
+                   printf 'Daemon laeuft nicht...%78s' "$WARNING_SYS" | $LOGGER
+                fi
+                ;;
+  version)
+                echo ""
+     			printf 'Version des Daemon-Scripts: %d.%03d.%04d\n' "$MAJOR" "$MINOR" "$BUILD"
+     			printf 'Version des Daemon-Scripts: %d.%03d.%04d\n' "$MAJOR" "$MINOR" "$BUILD" | $LOGGER
+     			echo ""
+                ;;
+
+  restart)
+  				echo ""
+                echo -e "Daemon wird neugestartet...\n"
+                echo "Status des Daemon ermitteln..." | $LOGGER
+                $0 stop
+                sleep 1
+                $0 start
+                ;;
+  *) echo "Benutzung: sunnyconnectord32 {start|stop|status|restart|version}" >&2
+                  exit 1
+                ;;
+esac
+
+exit 0;
